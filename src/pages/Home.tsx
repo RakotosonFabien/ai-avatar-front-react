@@ -1,23 +1,17 @@
-// src/pages/Home.tsx
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
-    <div style={{ textAlign: "center", paddingTop: "150px" }}>
-      <h1>Welcome to AI Mood Companion</h1>
+    <div className="flex flex-col items-center justify-center h-screen text-center">
+      <h1 className="text-4xl font-bold mb-8">Welcome to AI Mood Companion</h1>
       <button
         onClick={() => navigate("/live")}
-        style={{
-          padding: "10px 20px",
-          fontSize: "18px",
-          marginTop: "40px",
-          cursor: "pointer",
-        }}
+        className="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg hover:bg-blue-700 transition"
       >
         Go to Live Test
       </button>
     </div>
-  )
+  );
 }
