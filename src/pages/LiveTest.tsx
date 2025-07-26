@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { sendMessage, getSpeech } from "../utils/api";
 import AvatarCanvas from "../components/AvatarCanvas";
 
@@ -6,6 +6,7 @@ export default function LiveTest() {
   const [input, setInput] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
+  const avatarRef = useRef<any>(null);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -17,7 +18,36 @@ export default function LiveTest() {
 
       const audioUrl = await getSpeech(aiReply.reply);
       const audio = new Audio(audioUrl);
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaElementSource(audio);
+      const analyser = audioContext.createAnalyser();
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+
+      const updateMouth = () => {
+        analyser.getByteTimeDomainData(dataArray);
+        // Normalize volume between 0 and 1
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const val = (dataArray[i] - 128) / 128;
+          sum += val * val;
+        }
+        const volume = Math.sqrt(sum / dataArray.length);
+        if (avatarRef.current?.animateMouth) {
+          avatarRef.current.animateMouth(volume * 2); // volume scale
+        }
+        if (!audio.paused) {
+          requestAnimationFrame(updateMouth);
+        } else if (avatarRef.current?.resetMouth) {
+          console.log("Audio ended, resetting mouth");
+          avatarRef.current.resetMouth();
+        }
+      };
+
       audio.play();
+      updateMouth();
     } catch (err) {
       console.error("Error handling message:", err);
     } finally {
@@ -32,7 +62,11 @@ export default function LiveTest() {
         <div>
           <h2 className="text-3xl font-bold text-gray-800 mb-4">🧠 Chat with AI</h2>
           <div className="min-h-[200px] bg-white p-4 rounded-lg shadow-inner border text-gray-800 mb-6 overflow-auto max-h-60">
-            {response ? <p className="whitespace-pre-wrap">🤖 {response}</p> : <p className="text-gray-400 italic">AI response will appear here...</p>}
+            {response ? (
+              <p className="whitespace-pre-wrap">🤖 {response}</p>
+            ) : (
+              <p className="text-gray-400 italic">AI response will appear here...</p>
+            )}
           </div>
           <textarea
             value={input}
@@ -54,7 +88,7 @@ export default function LiveTest() {
       <div className="bg-white border-l p-6 flex flex-col">
         <h2 className="text-3xl font-bold text-gray-800 mb-4">🧍 Avatar</h2>
         <div className="flex-1 bg-gray-100 border rounded-xl shadow-inner flex items-center justify-center text-gray-500 text-lg">
-          <AvatarCanvas />
+          <AvatarCanvas ref={avatarRef} />
         </div>
       </div>
     </div>
