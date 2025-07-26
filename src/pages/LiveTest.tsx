@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { sendMessage, getSpeech } from "../utils/api";
+import AvatarCanvas from "../components/AvatarCanvas";
 
 export default function LiveTest() {
   const [input, setInput] = useState("");
@@ -25,7 +26,7 @@ export default function LiveTest() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1fr_400px] h-screen bg-gray-50">
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_600px] h-screen bg-gray-50">
       {/* Chat Panel */}
       <div className="p-6 flex flex-col justify-between">
         <div>
@@ -53,7 +54,7 @@ export default function LiveTest() {
       <div className="bg-white border-l p-6 flex flex-col">
         <h2 className="text-3xl font-bold text-gray-800 mb-4">🧍 Avatar</h2>
         <div className="flex-1 bg-gray-100 border rounded-xl shadow-inner flex items-center justify-center text-gray-500 text-lg">
-          (Avatar Canvas Coming Soon)
+          <AvatarCanvas />
         </div>
       </div>
     </div>
