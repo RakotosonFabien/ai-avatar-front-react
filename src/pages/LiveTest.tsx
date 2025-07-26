@@ -4,48 +4,55 @@ import { sendMessage, getSpeech } from "../utils/api";
 export default function LiveTest() {
   const [input, setInput] = useState("");
   const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const aiReply = await sendMessage(input);
-    setResponse(aiReply.reply);
-    // setResponse("My default reply");
+    setLoading(true);
+    try {
+      const aiReply = await sendMessage(input);
+      setResponse(aiReply.reply);
 
-    const audioUrl = await getSpeech(aiReply.reply);
-    // const audioUrl = await getSpeech("My default reply");
-    const audio = new Audio(audioUrl);
-    audio.play();
+      const audioUrl = await getSpeech(aiReply.reply);
+      const audio = new Audio(audioUrl);
+      audio.play();
+    } catch (err) {
+      console.error("Error handling message:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_400px] h-screen bg-gray-50">
       {/* Chat Panel */}
-      <div className="flex-1 p-8 bg-gray-100">
-        <h2 className="text-2xl font-semibold mb-4">🧠 Chat with AI</h2>
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="w-full h-32 p-4 border border-gray-300 rounded resize-none focus:outline-none focus:ring"
-          placeholder="Type your thoughts..."
-        />
+      <div className="p-6 flex flex-col justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">🧠 Chat with AI</h2>
+          <div className="min-h-[200px] bg-white p-4 rounded-lg shadow-inner border text-gray-800 mb-6 overflow-auto max-h-60">
+            {response ? <p className="whitespace-pre-wrap">🤖 {response}</p> : <p className="text-gray-400 italic">AI response will appear here...</p>}
+          </div>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="w-full h-28 p-4 text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            placeholder="Type your thoughts..."
+          />
+        </div>
         <button
           onClick={handleSend}
-          className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+          disabled={loading}
+          className="mt-4 bg-blue-600 text-white font-medium py-3 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
         >
-          Send
+          {loading ? "Sending..." : "Send"}
         </button>
-        {response && (
-          <div className="mt-6 p-4 bg-white rounded shadow text-lg">
-            🤖 {response}
-          </div>
-        )}
       </div>
 
       {/* Avatar Panel */}
-      <div className="w-[400px] bg-white p-8 border-l">
-        <h2 className="text-2xl font-semibold mb-4">🧍 Avatar</h2>
-        <div className="w-full h-[500px] bg-gray-200 flex items-center justify-center rounded border">
+      <div className="bg-white border-l p-6 flex flex-col">
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">🧍 Avatar</h2>
+        <div className="flex-1 bg-gray-100 border rounded-xl shadow-inner flex items-center justify-center text-gray-500 text-lg">
           (Avatar Canvas Coming Soon)
         </div>
       </div>
